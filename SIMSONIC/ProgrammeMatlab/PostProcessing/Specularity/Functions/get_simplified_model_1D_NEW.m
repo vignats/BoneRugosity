@@ -7,9 +7,9 @@ function MODEL_MAP = get_simplified_model_1D_NEW(estimated_geometry,PROBE_PARAM,
     NTILTs = numel(TILT_ANGLES);
     MODEL_MAP = zeros([NTILTs NZ NX]);
     SPECULAR_INTERFACE = [0 0];
-    wb=waitbar(0,'Simplified specuar model...');
+    wb=waitbar(0,'Simplified specular model...');
     for iz=1:NZ
-        waitbar(iz/NZ,wb,'Simplified specuar model ...');
+        waitbar(iz/NZ,wb,'Simplified specular model ...');
         for ix=1:NX
             transmit_time = TOF.Time_T(:,iz,ix);
             transmit_angle = AOV.Angle_R(:,iz,ix);

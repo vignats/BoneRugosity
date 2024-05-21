@@ -61,7 +61,7 @@ function[general_param] = WriteGeneralProperties(param, grid, print)
     grid_step_str = sprintf('%-29s: %-2.2g','Grid Step           (mm)',grid.step);
     CFL_coef = sprintf('%-29s: %-2.2g','CFL Coefficient',param.cfl);
     VMAX = sprintf('%-29s: %-2.4f','Vmax            (mm/us)',param.Vmax*1e-3);
-    simul_length = sprintf('%-29s: %-d','Simulation Length   (us)',param.length);
+    simul_length = sprintf('%-29s: %-d','Simulation Length   (us)',round(param.length));
     absorption_type=sprintf('%-29s: %-d\n','Absorption Type',2);%'';
 
     general_param = {'%%%%%%%%%% GENERAL PARAMETERS %%%%%%%' ...

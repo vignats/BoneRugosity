@@ -1,4 +1,4 @@
-function [param, grid, probe, medium, interface, signal, filter, simu_dir] = GenerateAllParametersExVivo(saveParam)
+function [param, grid, probe, medium, signal] = GenerateAllParametersExVivoAll()
 % This function contain all the parameters required for the simulation. 
 % Needs to be generate in MakeFiles.m
 % 
@@ -11,12 +11,6 @@ function [param, grid, probe, medium, interface, signal, filter, simu_dir] = Gen
     % directory. The waviness and/or roughness are obtained by filtration
     % of the endost boundary in the frequency domain
     
-    filter.bone = '227G';       % Bone from ex-vivo files
-    filter.image = 1590;        % Slice selected
-    filter.fc = 0.0714;         % Cut-off frequency, fc = 0.06 for waviness + roughness and 1.25 for roughness (mm-1)
-    filter.fs = 9e-3;           % Pixel size of the X-Ray image (mm)
-    filter.segmented = false;   % Indicate if the image is segmented
-
     % ACQUISITION PARAMETERS
     param.length = 20;               % Duration of the simulation (us) = sqrt((medium.interface - probe.depth)^2 + grid.width^2)*2e3/max(medium.cp) (us)
     param.cfl = 0.99;                % CFL 
@@ -37,7 +31,9 @@ function [param, grid, probe, medium, interface, signal, filter, simu_dir] = Gen
     probe.Nelements = 96;            % Number of elements 
     
     % MEDIUM PARAMETERS
-    medium = struct;
+    medium = struct;    bone.fc = 0.0714;         % Cut-off frequency, fc = 0.06 for waviness + roughness and 1.25 for roughness (mm-1)
+    bone.fs = 9e-3;           % Pixel size of the X-Ray image (mm)
+    bone.segmented = false;   % Indicate if the image is segmented
     medium.cp(1) = 1540;             % Longitudinal velocity (in m/s, default = 1540 m/s)
     medium.cp(2) = 3500;     
     medium.cs(1) = 0;                % Shear velocity (in m/s, default = 0 m/s)
@@ -46,30 +42,10 @@ function [param, grid, probe, medium, interface, signal, filter, simu_dir] = Gen
     medium.rho(2) = 2000;     
     medium.attenuation(1) = 0;       % Attenuation coefficient (dB/cm/MHz, default: 0)
     medium.attenuation(2) = 0;     
-    
-    % INTERFACE PARAMETERS
-    interface.depth = 10;                 % Interface between the bone and the soft tisse (mm)
-    interface.patient = 'osteoporotic';   % Type of patient that determine the pore size distribution ('young', 'aged' or 'osteoporotic')
-    interface.rms = 0.5;                  % rms height (mm)
-    interface.corr = 1;                 % correlation length (mm)
-    interface.porosity = 50;              % Porosity in the bone (volume of pore/volume of bone) (%)
-    interface.rugosity = 60;              % Rugosity in a layer of a wavelength size at the bone interface (%)
-    
+      
     % SIGNAL PARAMETERS 
     signal.fc = probe.fc;            % Central frequency (Hz)
     signal.B = 1.33e6;               % Bandwith at 3dB (Hz)
     signal.nb_periode = 3;           % Number of periode for the emitted signal
-    
-    % CREATION OF THE SIMULATION DIRECTORY FOR FILTRED ENDOST FROM EX-VIVO BONE
-    filename = '~/Documents/BoneRugosity/SIMSONIC/Simulation/';
-    simulation_name = ['Bone', filter.bone, '-Image', sprintf('%04d', filter.image), '-F', num2str(filter.fc), '/'];
-    simu_dir = [filename, simulation_name]; 
-    if ~exist(simu_dir,'dir')
-	    mkdir(simu_dir);
-    end
 
-    % SAVE PARAMETERS AND USEFUL FUNCTION  
-    if saveParam
-        save(fullfile(simu_dir, 'parameters.mat'))
-    end
 end

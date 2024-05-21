@@ -1,4 +1,4 @@
-function[profile, roughness, xProfile] = FilterProfil(filename, fc, segmented)
+function[profile, roughness, xProfile] = FilterProfil(binaryImage, fc)
 % This function allow to filter the low frequency data of the profile,
 % which corresponds to the waviness, in order to obtain the roughness that
 % corresponds to higher frequency. 
@@ -11,7 +11,7 @@ function[profile, roughness, xProfile] = FilterProfil(filename, fc, segmented)
 % See also : ExtractBoundary
     
     % BOUNDARIES COMPUTATION
-    [boundaryEndost, ~] = ExtractBoundary(filename, segmented);
+    [boundaryEndost, ~] = ExtractBoundary(binaryImage);
     boundaryEndost(2, :) = max(boundaryEndost(2, :)) - boundaryEndost(2, :);
     
     % ROUGHNESS COMPUTATION

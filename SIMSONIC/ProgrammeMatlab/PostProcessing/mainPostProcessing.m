@@ -16,26 +16,26 @@ addpath(genpath('/calculSSD/salome'));
 % simu_dir = [pathname, simulation_name];
 
 % Ex-vivo rough interface
-pathname = '/calculSSD/salome/Simulation-28mars/';
-bone = '227G';
-image = '1590';
-fc = 1.25;
-simulation_name = ['Bone', bone, '-Image', image, '-F', num2str(fc), '/'];
-simu_dir = [pathname, simulation_name]; 
+pathname = '/calculSSD/salome/Simulation-Test/';
+% bone = '227G';
+% image = '1590';
+% fc = 1.25;
+% simulation_name = ['Bone', bone, '-Image', image, '-F', num2str(fc), '/'];
+simu_dir = fullfile(pathname, 'simulation_two'); 
 
 % Get parameters of the simulation 
 parameters = load(fullfile(simu_dir, 'parameters.mat'));
 recorded = LoadRfData(parameters.probe, simu_dir);
 
 %% Compute parameters required to reconstruct the image using DAS and/or specular transform
-[acquisition, reconstruction] = GenerateParamRecon(recorded);
+[acquisition, reconstruction] = GenerateParamRecon(recorded, parameters);
 
 %% Compute the specular transform
-[SpecularTransform, TiltAngles] = ComputeSpecularTransform(reconstruction, acquisition);
+[SpecularTransform, TiltAngles] = ComputeSpecularTransform(reconstruction, acquisition, parameters);
 
 %% Compute teh specularity map and angle
 plotMap = true;
-[SpecularModel] = ComputeSpecularityModel(SpecularTransform, acquisition, reconstruction, TiltAngles, plotMap, simu_dir);
+[SpecularModel] = ComputeSpecularityModel(SpecularTransform, acquisition, reconstruction, TiltAngles, plotMap, parameters, simu_dir);
 
 %% Plot map
        

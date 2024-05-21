@@ -1,4 +1,4 @@
-function [acquisition, reconstruction] = GenerateParamRecon(recorded)
+function [acquisition, reconstruction] = GenerateParamRecon(recorded, parameters)
     C_LENS = 1540; LENS_THICKNESS = 1e-6;
     
     RAW_RF_SIG = recorded.Signals;
@@ -22,9 +22,6 @@ function [acquisition, reconstruction] = GenerateParamRecon(recorded)
     zmin = 2e-3;%
     zmax = 15e-3;%
     
-    BEST_C_LAYER= 3500;
-
-    
     acquisition.ZS = zeros(size(acquisition.XS));
     acquisition.C_LENS = C_LENS;
     acquisition.LENS_THICKNESS = LENS_THICKNESS;
@@ -37,14 +34,19 @@ function [acquisition, reconstruction] = GenerateParamRecon(recorded)
     assert(all(isfield(acquisition,field_probe_struct)))
     
     %
-
+    BEST_C_LAYER_2 = 3500;
+    if ~isfield(parameters.interface, 'periost') || parameters.interface.periost == 0
+        BEST_C_LAYER_1 = BEST_C_LAYER_2;
+    else 
+        BEST_C_LAYER_1 = 1540;
+    end  
     %
     D_PROBE_PERIOS = 10e-3;
     tx_fnumber = 0.6; % Transmit fnumber
     rx_fnumber = 0.6; %  Receive fnumber
     reconstruction = struct('MIN_CORTICAL',3e-3, 'MAX_CORTICAL',15e-3,...
         'D_PROBE_PERIOS',D_PROBE_PERIOS,...
-        'C_TISSUE',BEST_C_LAYER,'C_RADIAL',BEST_C_LAYER,'C_AXIAL',BEST_C_LAYER,...
+        'C_TISSUE',BEST_C_LAYER_1,'C_RADIAL',BEST_C_LAYER_2,'C_AXIAL',BEST_C_LAYER_2,...
         'C_MARROW',1540,'ANISO_SHAPE_COEF',0,...
         'FnumberMin',rx_fnumber, 'SubApertureApodis',2, ...
         'NeedTravelTime',0,'ReConTo',2,...
@@ -52,9 +54,7 @@ function [acquisition, reconstruction] = GenerateParamRecon(recorded)
     TxHalfOpeningAngInSkinDeg=atand(1/2/tx_fnumber);
     reconstruction.HalfOpeningAngInLensRad = asin(acquisition.C_LENS/reconstruction.C_TISSUE*sind(TxHalfOpeningAngInSkinDeg)); % [rad]
 
-    reconstruction.BEST_C_LAYER = BEST_C_LAYER;
-
-    reconstruction.pixel_size = pixelSize*reconstruction.BEST_C_LAYER/acquisition.FREQ_Transducteur;
+    reconstruction.pixel_size = pixelSize*BEST_C_LAYER_1/acquisition.FREQ_Transducteur;
     reconstruction.X = xmin:reconstruction.pixel_size:xmax;
     reconstruction.Z = zmin:reconstruction.pixel_size:zmax;
     reconstruction.Xmm = reconstruction.X*1e3; reconstruction.Zmm = reconstruction.Z*1e3;
@@ -75,13 +75,40 @@ function [acquisition, reconstruction] = GenerateParamRecon(recorded)
     acquisition.XR = acquisition.XS;
     acquisition.ZR = acquisition.ZS;
 
-    [Angle_T,Angle_R] = function_get_angle_of_view_sa(reconstruction.X,reconstruction.Z,acquisition.XS,acquisition.ZS,...
+    % TIME OF FLIGHT and ANGLES OF VIEW in the two cases  
+    if  ~isfield(parameters.interface, 'periost') || parameters.interface.periost == 0
+        [Angle_T,Angle_R] = function_get_angle_of_view_sa(reconstruction.X,reconstruction.Z,acquisition.XS,acquisition.ZS,...
         acquisition.XR,acquisition.ZR);
-    [Time_T, Time_R] = function_get_time_of_flight_sa(reconstruction.X,reconstruction.Z,reconstruction.BEST_C_LAYER,acquisition.XS,acquisition.ZS, ...
-        acquisition.XR,acquisition.ZR);
+        [Time_T, Time_R] = function_get_time_of_flight_sa(reconstruction.X,reconstruction.Z,BEST_C_LAYER_1, ...
+            acquisition.XS,acquisition.ZS, acquisition.XR,acquisition.ZR);
+        
+        reconstruction.Bone.timeFlight.Time_T =Time_T;
+        reconstruction.Bone.timeFlight.Time_R = Time_R;
+        reconstruction.Bone.Degre.angleView.Angle_T = Angle_T;
+        reconstruction.Bone.Degre.angleView.Angle_R = Angle_R;
+        reconstruction.Bone.Pixel.angleView.Angle_T = Angle_T;
+        reconstruction.Bone.Pixel.angleView.Angle_R = Angle_R;
     
-    reconstruction.timeFlight.Time_T =Time_T;
-    reconstruction.timeFlight.Time_R = Time_R;
-    reconstruction.angleView.Angle_T = Angle_T;
-    reconstruction.angleView.Angle_R = Angle_R;
+    else 
+        [~, reconstruction.PERI, reconstruction.ENDO, Angles,Times] = DAS_boneimage_Salome(reconstruction, reconstruction.FnumberMin, ...
+        xmin,xmax, false);
+        % Time of flight
+        reconstruction.Tissu.timeFlight.Time_T = Times.Time_T_Tissue;
+        reconstruction.Tissu.timeFlight.Time_R = Times.Time_R_Tissue;
+
+        reconstruction.Bone.timeFlight.Time_T = Times.Time_T_Bone;
+        reconstruction.Bone.timeFlight.Time_R = Times.Time_R_Bone;
+        
+        % Angle of view in pixel
+        reconstruction.Tissu.Pixel.angleView.Angle_T = rad2deg(Angles.APix_T_Tissue);
+        reconstruction.Tissu.Pixel.angleView.Angle_R = rad2deg(Angles.APix_T_Tissue);
+        reconstruction.Bone.Pixel.angleView.Angle_T = rad2deg(Angles.APix_T_Bone);
+        reconstruction.Bone.Pixel.angleView.Angle_R = rad2deg(Angles.APix_T_Bone);
+
+        % Angle of view in degree
+        reconstruction.Bone.Degre.angleView.Angle_T = rad2deg(Angles.Angle_T_Bone);
+        reconstruction.Bone.Degre.angleView.Angle_R = rad2deg(Angles.Angle_T_Bone);
+        reconstruction.Tissu.Degre.angleView.Angle_T = rad2deg(Angles.Angle_T_Tissue);
+        reconstruction.Tissu.Degre.angleView.Angle_R = rad2deg(Angles.Angle_R_Tissue);
+    end 
 end

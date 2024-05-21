@@ -9,6 +9,12 @@ function [SPECULAR_TRANSFORM] = function_get_specular_transform_interpol(...
         FS (1,1) 
         TILT_angles {mustBeInRange(TILT_angles,-90,90)}
     end
+% TODO: Add function description
+    % TOF = RECON_PARAM.timeFlight;
+    % AOV_px = RECON_PARAM.angleView;
+    % AOV_elem = AOV_px;
+    % FS = acquisition.Fs;
+
     SIG = RECON_PARAM.rf_data;
     SIG = SIG(RECON_PARAM.PROBE_PARAM.offset+1:end,:,:);
     % I/Q separation.
@@ -32,7 +38,7 @@ function [SPECULAR_TRANSFORM] = function_get_specular_transform_interpol(...
     SPECULAR_TRANSFORM = zeros(NTilts,Nz,Nx);
     wb=waitbar(0,'1D specular transformation ...');
     for iz=1:Nz%
-        waitbar(iz/Nz,wb,'1D specuar transformation ...');
+        waitbar(iz/Nz,wb,'1D specular transformation ...');
         for ix=1:Nx%
             tx_tflight = Time_T(:,iz,ix);rx_tflight = Time_R(:,iz,ix)';
             tx_angled = Angle_T_px(:,iz,ix);rx_angled = Angle_R_px(:,iz,ix); 

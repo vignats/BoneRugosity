@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Répertoire parent des simulations
-parent_dir="/calculSSD/salome/Simulation-04avr"
+parent_dir="/calculSSD/salome"
 
 # Boucle pour parcourir les dossiers de simulation
-for simu_dir in "$parent_dir"/*; do
+for simu_dir in "$parent_dir"/"simulation_"*; do
 	# Extraire le nom du dossier de simulation
 	simu_name=$(basename "$simu_dir")
         

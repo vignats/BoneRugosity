@@ -12,10 +12,10 @@ fprintf('Started the processing at %s\n', tstart)
 simul_data_dir = '~/1D_SPECULAR_MODEL';%'/calculSSD/adia/SIMULATION/SPECULAR/FLUID';
 %
 
-data_dir = sprintf('%s/PORE_SIZE_%02d',simul_data_dir,pore_size);
-
-parameters = load(fullfile(simuDir(1).name, 'parameters.mat'));
-recorded  = LoadRfData(parameters.probe, simuDir(1).name);
+% data_dir = sprintf('%s/PORE_SIZE_%02d',simul_data_dir,pore_size);
+data_dir =  '/calculSSD/salome/Simulation-Test/simulation_two'
+parameters = load(fullfile(data_dir, 'parameters.mat'));
+recorded  = LoadRfData(parameters.probe, data_dir);
 
 %%
 C_LENS = 1540; LENS_THICKNESS = 1e-6;
@@ -172,7 +172,7 @@ toc
 
 %% SPECULAR TRANSFORM MODELS
 model_version = 'exact_1';%exact_0 exact_1 simplified_0 simplified_1
-excitation_signal=hilbert(SimSonic2DReadSgl([simul_data_dir '/Signal.sgl']));
+excitation_signal=hilbert(SimSonic2DReadSgl([data_dir '/Signal.sgl']));
 PROBE_PARAM.XR = PROBE_PARAM.XS;
 fprintf('---------GET SPECULAR TRANSFORM MODELS---------\n')
 estimated_geometry = struct('X',X,'Z',Z,'lens_thick',PROBE_PARAM.LENS_THICKNESS,...

@@ -6,7 +6,7 @@ addpath(genpath('/calculSSD/salome'));
 
 %% PROCESSING OF THE RF DATA 
 % Generate a table to stock the geometry and the specularity Map
-pathSimuAll = '/calculSSD/salome/Simulation-19avr';
+pathSimuAll = '/calculSSD/salome/Simulation-29avr';
 rmsAll = 0.03 + (0:9) * 0.05;      % List of rms values (mm)
 corrAll = [0.5 1 2 4];             % List of correlation length (mm)
 
@@ -19,7 +19,7 @@ Results.SpecuMap = ComputeMap('SpecuMap', rmsAll, corrAll, pathSimuAll, Results)
 %% Plot maps
 MapTitle = 'Interface profile for various RMS and correlation length';
 PlotAll('Map', Results, rmsAll, corrAll, pathSimuAll, MapTitle);
-
+%%
 MapTitle = 'Specular probability for various RMS and correlation length';
 PlotAll('SpecuMap', Results, rmsAll, corrAll, pathSimuAll, MapTitle);
 
@@ -39,7 +39,7 @@ for i = 1:numel(rmsAll)
     for j = 1:numel(corrAll)
         Results.Stat.meanROI{i,j} = SpecuProba{i,j}{1}.meanROI;
         Results.Stat.stdROI{i,j} = SpecuProba{i,j}{1}.stdROI;
-        % Results.Stat.linearROI{i,j} = {SpecuProba{i,j}{1}.linearROI};
+        Results.Stat.linearROI{i,j} = {SpecuProba{i,j}{1}.linearROI};
     end
 end
 
@@ -59,18 +59,18 @@ PlotAll('Stat', Results, rmsAll, corrAll, pathSimuAll, MapTitle);
 Param = ComputeMap('InterfaceParam', rmsAll, corrAll, pathSimuAll, Results);
 Results.InitParam = struct();
 Results.InitParam.Corr = table('Size', [numel(rmsAll), numel(corrAll)], ...
-                'VariableType', repmat({'cell'}, 1, numel(corrAll)), ...
+                'VariableType', repmat({'double'}, 1, numel(corrAll)), ...
                 'VariableNames', cellstr(string(corrAll)), ...
                 'RowNames', cellstr(string(rmsAll))); 
 Results.InitParam.Rms = table('Size', [numel(rmsAll), numel(corrAll)], ...
-                'VariableType', repmat({'cell'}, 1, numel(corrAll)), ...
+                'VariableType', repmat({'double'}, 1, numel(corrAll)), ...
                 'VariableNames', cellstr(string(corrAll)), ...
                 'RowNames', cellstr(string(rmsAll))); 
 
 for i = 1:numel(rmsAll)
     for j = 1:numel(corrAll)
-        Results.InitParam.Rms{i,j} = Param{i,j}{1}(1);
-        Results.InitParam.Corr{i,j} = Param{i,j}{1}(2);
+        Results.InitParam.Rms{i,j} = Param{i,j}{1}{1};
+        Results.InitParam.Corr{i,j} = Param{i,j}{1}{2};
     end
 end
 
@@ -82,7 +82,7 @@ function[Table] = ComputeMap(MapType, rmsAll, corrAll, pathSimuAll, Results)
     format = 'simulation_rms_%.2f_cl_%.1f/';
     simuDir1 = fullfile(pathSimuAll, sprintf(format, rmsAll(1), corrAll(1)));
     parameters = load(fullfile(simuDir1, 'parameters.mat'));
-
+    
     Table = table('Size', [numel(rmsAll), numel(corrAll)], ...
                 'VariableType', repmat({'cell'}, 1, numel(corrAll)), ...
                 'VariableNames', cellstr(string(corrAll)), ...
@@ -94,7 +94,7 @@ function[Table] = ComputeMap(MapType, rmsAll, corrAll, pathSimuAll, Results)
         for j = 1:numel(corrAll)
             corr = str2double(Table.Properties.VariableNames{j});
             simu_dir = fullfile(pathSimuAll, sprintf(format, rms, corr));
-    
+            try
             % Compute the required type of simulation 
             switch MapType
                 case 'Map'
@@ -108,7 +108,7 @@ function[Table] = ComputeMap(MapType, rmsAll, corrAll, pathSimuAll, Results)
                     end
                 case 'Stat'
                     recorded = LoadRfData(parameters.probe, simuDir1);
-                    [~, reconstruction] = GenerateParamRecon(recorded);
+                    [~, reconstruction] = GenerateParamRecon(recorded, parameters);
                     probability = ProbaROI(Results.SpecuMap{i,j}{1}, reconstruction, parameters, false);
                     Table{i,j}{1} = probability;
                 case 'InterfaceParam'
@@ -117,13 +117,14 @@ function[Table] = ComputeMap(MapType, rmsAll, corrAll, pathSimuAll, Results)
                 otherwise 
                     warning('Unexpected Map type. No data computed.')
             end
+            end
         end
     end
 end
 
 function[] = PlotAll(MapType, Struct, rmsAll, corrAll, pathSimuAll, MapTitle)
     Table = getfield(Struct, MapType);
-
+    
     % Compute parameters once 
     format = 'simulation_rms_%.2f_cl_%.1f/';
     simuDir1 = fullfile(pathSimuAll, sprintf(format, rmsAll(1), corrAll(1)));
@@ -137,10 +138,19 @@ function[] = PlotAll(MapType, Struct, rmsAll, corrAll, pathSimuAll, MapTitle)
             % Plot each map
             nexttile(t)
             switch MapType
-                case {'Map', 'SpecuMap'}
+                case 'Map'
                     try
-                        img = Table{i,j}{1};
+                        img = Table{i,j}{1};num_slice
                         imagesc(img);
+                    end
+                case 'SpecuMap'
+                    try
+                        if isfield(parameters.interface, 'periost') && parameters.interface.periost > 0
+                            img = Table{i,j}{1}.Bone;
+                        else 
+                            img = Table{i,j}{1};
+                        end
+                            imagesc(img);
                     end
                 case 'Stat'
                     try

@@ -1,4 +1,4 @@
-function [porosity, totalVolume] = ComputePorosity(binaryImage, boundaryEndost, nbWavelength, plotBoundary)
+function [porosity, totalVolume] = ComputePorosity(binaryImage, boundaryEndost, width, plotBoundary)
 % This function allows to compute a percentage of porosity which is
 % represented by the volume of bone over the total volume in a specified
 % width around the boundary.
@@ -16,11 +16,11 @@ function [porosity, totalVolume] = ComputePorosity(binaryImage, boundaryEndost, 
 % See also : ExpandParabola
     
     % Define the width corresponding to a number of wavelength
-    pixelSize = 9e-3; lambda = 1.4; % Wavelength of the ultrasound in the bone (mm) 
-    boundaryWidth = nbWavelength*lambda/pixelSize;
-
+    pixelSize = 9e-3; 
+    boundaryWidth = width/pixelSize;
+    
     surfaceExtended = ExpandParabola(boundaryEndost, boundaryWidth);
-
+    
     boneVolume = 0;
     totalVolume = 0;
 
@@ -38,17 +38,17 @@ function [porosity, totalVolume] = ComputePorosity(binaryImage, boundaryEndost, 
     porosity = 100 * (1 - boneVolume/totalVolume);
 
     if plotBoundary
-        figure
-        imshow(binaryImage);
-        hold on 
-        plot(boundaryEndost(1,:), boundaryEndost(2,:), 'r', 'LineWidth', 2)
-        hold on         
-        plot(surfaceExtended(1,:), surfaceExtended(2,:), 'b', 'LineWidth', 2)
-        xlabel('Width');
-        ylabel('Depth');
-        grid on
-        title('Boundary of the endostium'); 
-        legend('Boundary of the endost', 'Limite of the boundary'); hold off;
+            figure
+            imshow(binaryImage);
+            hold on 
+            plot(boundaryEndost(1,:), boundaryEndost(2,:), 'r', 'LineWidth', 2)
+            hold on         
+            plot(surfaceExtended(1,:), surfaceExtended(2,:), 'b', 'LineWidth', 2)
+            xlabel('Width');
+            ylabel('Depth');
+            grid on
+            title('Boundary of the endostium'); 
+            legend('Boundary of the endost', 'Limite of the boundary'); hold off;
 
         fprintf('The bone as a porosity of %.1f %% in a width of %.1f wavelength before the endost thus %.2f mm', ...
             porosity, nbWavelength, nbWavelength*lambda);
@@ -59,11 +59,11 @@ function [surfaceExtended] = ExpandParabola(boundaryEndost, boundaryWidth)
 % This function allows to expand the parabola that fit to the boundary
 % endost. 
     surface = FitParabola(boundaryEndost);
-
+    
     % Get coefficient of the parabola
     % In order to compute he model, we reshape it. 
     y = max(surface(:,2)) - surface(:,2);
-    x = surface(:,1) - surface(y == max(y), 1);
+    x = surface(:,1) - unique(surface(y == max(y), 1));
     coeffParabola = polyfit(x, y, 2); 
     
     % Get maximum and root of the parabola
@@ -77,10 +77,33 @@ function [surfaceExtended] = ExpandParabola(boundaryEndost, boundaryWidth)
     xExtended = (-length(x): 1: length(x))';
     yExtended = A.*xExtended.^2 + B.*xExtended + C;
 
-    % Reshcape as previously 
-    surfaceExtended(:,1) = xExtended + surface(y == max(y), 1);
+    % Reshape as previously 
+    surfaceExtended(:,1) = xExtended + unique(surface(y == max(y), 1));
     surfaceExtended(:,2) = max(surface(:,2)) - yExtended - 2*boundaryWidth;
 
     surfaceExtended = surfaceExtended';
 end
 %% Script to plot the expanded boundary. 
+% y = surface(:,2);
+% x = surface(:,1);
+% [~, ~, V] = svd([x,y]);
+% angle = atan2(V(1, 2), V(2, 2));
+% 
+% % Rotate the data points to align with the new coordinate system
+% rotated_data = ([cos(angle) -sin(angle); sin(angle) cos(angle)] * [x,y]')';
+% 
+% % Fit a parabola to the rotated data
+% coeffParabolaR = polyfit(rotated_data(:,1), rotated_data(:,2), 2);  
+% 
+% % Find the roots of the rotated parabola
+% rR = roots(coeffParabolaR);
+% 
+% % Plot the rotated data and roots
+% figure;
+% plot(rotated_data(:,1), rotated_data(:,2), 'r');
+% hold on;
+% plot(rR, zeros(size(rR)), 'bo'); % Plot roots on the x-axis in rotated coordinates
+% axis equal;
+% title('Rotated Data');
+% xlabel('X''');
+% ylabel('Y''');

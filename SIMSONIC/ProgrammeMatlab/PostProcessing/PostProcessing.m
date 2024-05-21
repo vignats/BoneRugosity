@@ -10,12 +10,13 @@ function[SpecularModel, SpecularProbaMap, OrientationtMap, reconstruction] = Pos
     recorded = LoadRfData(parameters.probe, simuDir);
     
     % Compute parameters required to reconstruct the image using DAS and/or specular transform
-    [acquisition, reconstruction] = GenerateParamRecon(recorded);
+    [acquisition, reconstruction] = GenerateParamRecon(recorded, parameters);
     
     % Compute the specular transform
-    [SpecularTransform, TiltAngles] = ComputeSpecularTransform(reconstruction, acquisition);
+    [SpecularTransform, TiltAngles] = ComputeSpecularTransform(reconstruction, acquisition, parameters);
     
     % Compute teh specularity map and angle
     plotMap = false;
-    [SpecularModel, SpecularProbaMap, OrientationtMap] = ComputeSpecularityModel(SpecularTransform, acquisition, reconstruction, TiltAngles, plotMap, simuDir);
+    [SpecularModel, SpecularProbaMap, OrientationtMap] = ComputeSpecularityModel(SpecularTransform, ...
+        acquisition, reconstruction, TiltAngles, plotMap, parameters, simuDir);
 end

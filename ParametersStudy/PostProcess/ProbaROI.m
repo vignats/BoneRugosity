@@ -42,6 +42,9 @@ function[ROI] = ExtractROI(SpecularProbaMap, parameters, reconstruction, plotROI
     lengthROI = (parameters.medium.cp(2) / (parameters.probe.fc)*1e3);       % Number of wavelength in the bone that we consider (mm)
     LimInf = to_px(specularInterface - lengthROI/2);
     LimSup = to_px(specularInterface + lengthROI/2);
+    if isfield(parameters.interface, 'periost') && parameters.interface.periost > 0
+        SpecularProbaMap = SpecularProbaMap.Bone;
+    end
     ROI = SpecularProbaMap(LimInf : LimSup, :);
     
     if plotROI

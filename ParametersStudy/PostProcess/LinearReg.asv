@@ -65,12 +65,6 @@ hold on
 surf(corrAll, rmsAll, table2array(ResultsAll{2}.Stat.meanROI), 'FaceColor', 'blue', 'FaceAlpha', 0.5);
 hold on
 surf(corrAll, rmsAll, table2array(ResultsAll{3}.Stat.meanROI), 'FaceColor', 'green', 'FaceAlpha', 0.5);
-hold on 
-scatter3(inputCell{1}(:,1), inputCell{1}(:,2),outputCell{1}, 'r*');
-hold on;
-scatter3(inputCell{2}(:,1), inputCell{2}(:,2), outputCell{2}, 'b*');
-hold on;
-scatter3(inputCell{3}(:,1), inputCell{3}(:,2), outputCell{3}, 'g*');
 
 xlabel('Correlation length (mm)');
 ylabel('Root mean square (mm)');
@@ -100,26 +94,33 @@ surf(X3, Y3, Z3, 'FaceColor', 'green', 'FaceAlpha', 0.5);
 
 %% Plot the scatter map
 % Extract numeric data from cell arrays
-x = inputCell{1}(:,1); % First column of inputs
-y = inputCell{1}(:,2); % Second column of inputs (if exists)
+x = inputCell{1}; % First column of inputs
+y = inputCell{2}; % Second column of inputs (if exists)
 z = outputCell{1}; % Output values
 
+% Ensure data is in numeric array form
+x = cell2mat(x);
+y = cell2mat(y);
+z = cell2mat(z);
+
 % Fit the data using a polynomial surface fit
-sf = fit([x, y], z, "linearinterp",ExtrapolationMethod="linear");
+sf = fit([x, y], z, 'poly23');
 
 % Create a 3D scatter plot with the fitted surface
 figure;
 scatter3(x, y, z, 'red', 'filled'); % Scatter plot of original data
 hold on;
-surf(x, y, z); % Plot the fitted surface
+plot(sf, [x, y], z); % Plot the fitted surface
 xlabel('X');
 ylabel('Y');
 zlabel('Z');
 title('3D Scatter Plot with Fitted Surface');
 grid on;
 %%
+sf = fit(inputCell{1},outputCell{1},'poly23');
+
 figure;
-scatter3(inputCell{1}(:,1), inputCell{1}(:,2),outputCell{1}, 'red');
+scatter3(inputCell{1}, inputCell{1},outputCell{1}, 'red');
 hold on;
 scatter3(inputCell{2}(:,1), inputCell{2}(:,2), outputCell{2}, 'blue');
 hold on;
@@ -137,18 +138,6 @@ hold on;
 plot(table2array(mean(ResultsAll{1}.InitParam.Rms, 2)), table2array(mean(ResultsAll{2}.Stat.meanROI, 2)), 'b-*');
 hold on;
 plot(table2array(mean(ResultsAll{1}.InitParam.Rms, 2)), table2array(mean(ResultsAll{3}.Stat.meanROI, 2)), 'g-*');
-xlabel('Correlation length (mm)');
-ylabel('Root mean square (mm)');
-zlabel('Mean Specular Probability');
-title('Mean Specular Probability in the Region of Interest');
-legend('No pores', '10um pores', '30um pores');
-%% Plot the mean value for rms
-figure;
-plot(table2array(mean(ResultsAll{1}.InitParam.Corr, 2)), table2array(mean(ResultsAll{1}.Stat.meanROI, 2)), 'r*');
-hold on;
-plot(table2array(mean(ResultsAll{1}.InitParam.Corr, 2)), table2array(mean(ResultsAll{2}.Stat.meanROI, 2)), 'b*');
-hold on;
-plot(table2array(mean(ResultsAll{1}.InitParam.Corr, 2)), table2array(mean(ResultsAll{3}.Stat.meanROI, 2)), 'g*');
 xlabel('Correlation length (mm)');
 ylabel('Root mean square (mm)');
 zlabel('Mean Specular Probability');

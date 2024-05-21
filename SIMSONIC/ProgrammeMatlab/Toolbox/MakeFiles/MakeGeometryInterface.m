@@ -76,6 +76,7 @@ function[Map, heights] = MakeGeometryInterface(grid, probe, medium, interface, v
             % for i = 1:nbPore
             
             % Generate pore until we reached the desired pore volume
+            [x, z] = meshgrid(1:Nx, 1:Nz);
             while sum(Map(to_px(interface.endost - lambda) : maxRowBone, :), 'all') >= totalVolume*(1-interface.rugosity/100)
                 % Generate a X and Z-coordinate for the pore between the
                 % original interface minus a wavelength and the bone endost
@@ -85,7 +86,9 @@ function[Map, heights] = MakeGeometryInterface(grid, probe, medium, interface, v
 
                 % Once a unique paire of coordinate has been generated,
                 % transform the bone in soft tissu medium (0) in a specified radius around the pore.
-                Map(zPores,xPores) = 0;   
+                masque = (x - xPores).^2 + (z - zPores).^2 >= to_px(interface.diameter/2).^2;            % Création of a mask to erode
+                Map = logical(Map).* masque;
+                % Map(zPores - 1 : zPores + 1 , xPores - 1 :  xPores + 1) = 0;   
             end
         end
     end
@@ -114,7 +117,7 @@ function[Map, heights] = MakeGeometryInterface(grid, probe, medium, interface, v
     % Compute Geometry.map2D file
     if nargin == 6
         fprintf(['\n--- Geometry Map saved in ', simu_dir(46:end-1)]);
-        SimSonic2DWriteMap2D(Map, [simu_dir 'Geometry.map2D']);
+        SimSonic2DWriteMap2D(uint8(Map), fullfile(simu_dir, 'Geometry.map2D'));
     end
 end
 

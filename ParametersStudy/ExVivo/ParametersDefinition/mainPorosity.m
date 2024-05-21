@@ -11,10 +11,10 @@ addpath(genpath('/calculSSD/salome'));
 % % boneTable = table(min_slices', max_slices', 'VariableNames', {'min_slice', 'max_slice'}, 'RowNames', bones);
 
 %% Get binarize bone image
-bone = '245D';
-num_slice = 800;
+bone = '227G';
+num_slice = 3595;
 
-dirname = ['/calculSSD//Dossier partagé image os exvivo/', bone, '/'];
+dirname = '/calculSSD/salome/BoneImage/';
 file = ['SAMPLE_', bone, '_SLICE_', sprintf('%04d', num_slice), '.bmp']; 
 filename = fullfile(dirname, file);
 

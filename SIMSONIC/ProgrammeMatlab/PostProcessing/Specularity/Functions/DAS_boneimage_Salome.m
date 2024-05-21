@@ -1,6 +1,6 @@
 function [ENV_bf, PeriParab,  EndoParab, Angles, Times]=DAS_boneimage_Salome( ...
     bone_image_output_data, fnumber, ...
-    XMinSegmentationEndo,XMaxSegmentationEndo)
+    XMinSegmentationEndo,XMaxSegmentationEndo, plotMap)
 %
 apodization_start_end_YES = 1;
 
@@ -131,7 +131,7 @@ FullImage_FixedReceiveAng = stitching_mask_Tissue.*ImageTissue_FixedReceiveAng +
 
 ENV_bf = FullImage_FixedReceiveAng;
 ENV_bf = ENV_bf/max(ENV_bf(:));
-show_image = 1;
+show_image = 0;
 if ~show_image
     return
 else %show_image
@@ -154,6 +154,7 @@ else %show_image
         plot(X*1e3,fit_curve_Endosteum*1e3,'k:', 'LineWidth',1.5)
 
 end    
+
 
 end
 

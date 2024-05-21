@@ -1,11 +1,12 @@
 close all;
 clear all;
+clc
 addpath(genpath('~/Documents'));
 addpath(genpath('/calculSSD/salome'));
 
 %% Get all the directory not yet post-processed
-% simuDirAll = '/calculSSD/salome/Simulation-19avr'; 
-simuDirAll = '~/Documents/BoneRugosity/SIMSONIC/Simulation/Simulation-19avr';
+simuDirAll = '/calculSSD/salome/Simulation-29avr'; 
+% simuDirAll = '~/Documents/BoneRugosity/SIMSONIC/Simulation/Simulation-19avr';
 simuDir = dir(sprintf('%s/simulation_rms_*', simuDirAll));
 
 dirFlags = [simuDir.isdir]; 
@@ -26,11 +27,45 @@ for idx = errorBis
         simu_dir = simuDir(idx);
         [SpecularModel, SpecularProbaMap, OrientationtMap, reconstruction] = PostProcessing(fullfile(simu_dir.folder, simu_dir.name));
         save(fullfile(simu_dir.folder, simu_dir.name, 'postProcess.mat'), 'SpecularProbaMap', 'OrientationtMap', 'reconstruction');
+        sprintf(['Specular map computed for'  simu_dir.name]);
     catch
         errorRemain(end+1) = idx;
     end
     
 end
+
+%% Post process with the same SpecularModel 
+errorRemain = [];
+
+% Get parameters of the simulation 
+parameters = load(fullfile(simuDir(1).folder, simuDir(1).name, 'parameters.mat'));
+recorded = LoadRfData(parameters.probe, fullfile(simuDir(1).folder, simuDir(1).name));
+
+% Compute parameters required to reconstruct the image using DAS and/or specular transform
+[acquisition, reconstruction] = GenerateParamRecon(recorded, parameters);
+
+% Compute the specular transform
+[SpecularTransform, TiltAngles] = ComputeSpecularTransform(reconstruction, acquisition, parameters);
+%%
+for idx = errorBis
+    try
+        simu_dir = simuDir(idx);
+        plotMap = false;
+        % Get parameters of the simulation 
+        parameters = load(fullfile(simu_dir.folder, simu_dir.name, 'parameters.mat'));
+        recorded = LoadRfData(parameters.probe, fullfile(simu_dir.folder, simu_dir.name));
+        
+        % Compute parameters required to reconstruct the image using DAS and/or specular transform
+        [acquisition, reconstruction] = GenerateParamRecon(recorded, parameters);
+        [SpecularModel, SpecularProbaMap, OrientationtMap] = ComputeSpecularityModel(SpecularTransform, ...
+            acquisition, reconstruction, TiltAngles, plotMap, parameters, fullfile(simu_dir.folder, simu_dir.name));
+        save(fullfile(simu_dir.folder, simu_dir.name, 'postProcess.mat'), 'SpecularProbaMap', 'OrientationtMap', 'reconstruction');
+    catch
+        errorRemain(end+1) = idx;
+    end
+    
+end
+
 
 
 

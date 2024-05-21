@@ -2,7 +2,7 @@ function[Map, heights] = MakeGeometryExVivo(grid, interface, filter, print, simu
 % MakeGeometryWaviness generates a map representing the bone/soft tissue interface.
 %
 % Syntax:
-%   Map = MakeGeometryWaviness(grid, probe, medium, interface, waviness, print, simu_dir)
+%   [Map, heights] = MakeGeometryExVivo(grid, interface, filter, print, simu_dir)
 %
 % Description:
 %   MakeGeometryInterface generates a map representing the bone/soft tissue interface based on extraction of the endost of the bone define in waviness.
@@ -12,7 +12,7 @@ function[Map, heights] = MakeGeometryExVivo(grid, interface, filter, print, simu
 % Generated with GenerateAllParameters(). 
 %   - grid: Structure containing information about the grid dimensions.
 %   - interface: Structure containing information about the interface properties.
-%   - waviness : Structure containing the bone information and cut-off
+%   - filter : Structure containing the bone information and cut-off
 %   frequency. fc = 0.06 for waviness + roughness and 1.25 for roughness.
 %   - print: Logical value indicating whether to plot the excitation signal.
 %   - simu_dir: Directory where the simulations files are saved, 
