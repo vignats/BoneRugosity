@@ -11,11 +11,15 @@ addpath(genpath('/calculSSD/salome'));
 % % boneTable = table(min_slices', max_slices', 'VariableNames', {'min_slice', 'max_slice'}, 'RowNames', bones);
 
 %% Get binarize bone image
-bone = '227G';
-num_slice = 3595;
+bone = '267G';
+zone = 2;
+num_slice = 3410;
 
-dirname = '/calculSSD/salome/BoneImage/';
-file = ['SAMPLE_', bone, '_SLICE_', sprintf('%04d', num_slice), '.bmp']; 
+% dirname = '/calculSSD/salome/BoneImage/';
+dirname = ['/calculSSD/Dossier partagé image os exvivo/', bone, '/ZONE_US_0', int2str(zone)];
+
+file = ['SAMPLE_', bone, '_SLICE_', sprintf('%08d', num_slice), '.bmp'];
+
 filename = fullfile(dirname, file);
 
 bone_bmp = imread(filename); 
@@ -24,9 +28,9 @@ binaryImage = imbinarize(bone_bmp, threshold);
 
 %% Compute the porosity of the bone
 % Compute X-Ray image and ultrasound rf informations 
-[boundaryEndost, boundaryPores] = ExtractBoundary(filename, false);
+[boundaryEndost, boundaryPores] = ExtractBoundary(binaryImage);
 
 % Compute the porosity in a surface of one wavelength around the boundary
-nbWavelength = 1/2;
-porosity = ComputePorosity(binaryImage, boundaryEndost, nbWavelength, true);
+width = 1/2;
+porosity = ComputePorosity(binaryImage, boundaryEndost, width, true);
 

@@ -25,7 +25,7 @@ function[boundaryEndost, boundaryPores] = ExtractBoundary(binaryImage)
     [nbOccurences, Zcoordinate] = groupcounts(Z_bound);                 % Count the number of occurences to detect the image boundary
     ImageBoundary = Zcoordinate(nbOccurences == max(nbOccurences));     % Define the Z coordinate of the image boundary
     
-    Limite = (X_bound(Z_bound == ImageBoundary));                     % Define and center the X coordinate of the image boundary
+    Limite = (X_bound(Z_bound == ImageBoundary));                       % Find the X coordinates corresponding to the limite 
     LimEndoMax =  find(X_bound == min(Limite(Limite - mean(X_bound) > 0)), 1, 'last');   
     LimEndoMin =  find(X_bound == max(Limite(Limite - mean(X_bound) < 0)), 1);
 

@@ -1,4 +1,4 @@
-function[Map, grid] = MakeGeometryExVivoAll(grid, probe, bone, rotate, printPlot, simu_dir)
+function[Map, grid] = MakeGeometryExVivoAll(grid, probe, bone, rotate, withoutPores, printPlot, simu_dir)
 % MakeGeometryWaviness generates a map representing the bone/soft tissue interface.
 %
 % Syntax:
@@ -61,9 +61,14 @@ function[Map, grid] = MakeGeometryExVivoAll(grid, probe, bone, rotate, printPlot
 
     Map = zeros(Nz, Nx, 'uint8');
     width = (Nx - size(binaryImage, 2))/2;
+
+    if withoutPores
+        binaryImage = imfill(binaryImage,'holes');
+    end
+
     Map(numLigneAdded + 1 : end, width : end-width-1) = uint8(binaryImage);
     
-    if nargin == 6
+    if nargin == 7
         fprintf(['\n--- Map and profile saved in ', simu_dir(46:end-1)]);
         SimSonic2DWriteMap2D(Map, fullfile(simu_dir, 'Geometry.map2D'));
     end

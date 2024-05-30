@@ -7,7 +7,7 @@ function [SPECULAR_MODEL, PROBA_MAP, SPECULAR_TILT_MAP] = ComputeSpecularityMode
     acquisition.XR = acquisition.XS;
     fprintf('---------GET SPECULAR TRANSFORM MODELS---------\n')
     
-    if isfield(parameters.interface, 'periost') && parameters.interface.periost > 0
+    if isfield(parameters, 'bone') || (isfield(parameters.interface, 'periost') && parameters.interface.periost > 0)
         % Compute the specular transform in the 3 layers case
         estimated_geometry = struct('X',reconstruction.X,'Z',reconstruction.Z,'lens_thick',acquisition.LENS_THICKNESS,...
          ...
@@ -66,7 +66,7 @@ function [SPECULAR_MODEL, PROBA_MAP, SPECULAR_TILT_MAP] = ComputeSpecularityMode
         % Compute the specular transform in the 2 layers case
         fprintf('\tBone Tissues\n')
         tic
-        
+
         NZ = numel(reconstruction.Z); NX = numel(reconstruction.X);
         MODEL_MAP.Bone = zeros([length(TiltAngles) NZ NX]);
         SPECULAR_INTERFACE = [0 0]; % coefficient d'une droite [a b] z=ax+b
@@ -111,14 +111,14 @@ function [SPECULAR_MODEL, PROBA_MAP, SPECULAR_TILT_MAP] = ComputeSpecularityMode
         lags = D_THETA*(-NTilts+1:NTilts-1);
         [PROBA_MAP.Bone, ind_B] = max(abs(CORRELATION),[],3);
         PROBA_MAP.Bone(isnan(PROBA_MAP.Bone))=0;
-        
-        
+
+
         SPECULAR_TILT_MAP.Bone = lags(ind_B);
         PROBA_MAP_Bone_bin  = double((PROBA_MAP.Bone>thresh));
         PROBA_MAP_Bone_bin(PROBA_MAP_Bone_bin==0)=nan;
         TILT_MAP_Bone_bin = SPECULAR_TILT_MAP.Bone.*PROBA_MAP_Bone_bin;
         SPECULAR_TILT_MAP.Bone(isnan(PROBA_MAP_Bone_bin))=nan;
-        
+
     end
 
     if plot 
@@ -131,6 +131,7 @@ function [SPECULAR_MODEL, PROBA_MAP, SPECULAR_TILT_MAP] = ComputeSpecularityMode
         xlabel('Lateral position [mm]', Interpreter='latex')
         ylabel('Depth [mm]', Interpreter='latex')
         colorbar
+        colormap jet
         title('Probability map',interpreter='latex')
         axis ij image, shading flat
         clim([0 1])
@@ -149,5 +150,6 @@ function [SPECULAR_MODEL, PROBA_MAP, SPECULAR_TILT_MAP] = ComputeSpecularityMode
         axis ij image;
         clim([-1 1]*45)
         colorbar
+        colormap jet
     end
 end

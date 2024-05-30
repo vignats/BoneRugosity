@@ -38,11 +38,10 @@ function [param, grid, probe, medium, interface, signal, simu_dir] = GenerateAll
     % INTERFACE PARAMETERS
     interface.endost = 10;                % Endosteum interface between the bone and the soft tisse (mm)
     interface.periost = 5;                % Periosteum interface, 0 if the probe is in the bone (mm)
-    interface.patient = 'osteoporotic';   % Type of patient that determine the pore size distribution ('young', 'aged' or 'osteoporotic')
-    interface.corr = 2;                   % Correlation length (mm)
-    interface.rms = 0.4;                  % Rms height (mm)
-    interface.diameter = 0.03;            % Size of the pore in the bone (mm)
-    interface.rugosity = 7;               % Rugosity in a layer of a wavelength size at the bone interface, 0 if no pore (%)
+    interface.corr = 0;                   % Correlation length (mm)
+    interface.rms = 0;                    % Rms height (mm)
+    interface.diameter = 0;            % Size of the pore in the bone (mm)
+    interface.rugosity = 0;               % Rugosity in a layer of a wavelength size at the bone interface, 0 if no pore (%)
         
     % SIGNAL PARAMETERS 
     signal.fc = probe.fc;            % Central frequency (Hz)
@@ -56,7 +55,7 @@ function [param, grid, probe, medium, interface, signal, simu_dir] = GenerateAll
     % of the endost boundary in the frequency domain
 
     % CREATION OF THE SIMULATION DIRECTORY
-    simuDirAll = '/calculSSD/salome/Simulation-15avr';
+    simuDirAll = '/calculSSD/salome/Simulation-pres';
     format = 'simulation_rms_%.2f_cl_%.1f/';
     simulation_name = sprintf(format, interface.rms, interface.corr);
     simu_dir = fullfile(simuDirAll, simulation_name); 

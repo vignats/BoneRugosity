@@ -22,8 +22,14 @@ for j = 1:numel(slices{i})
     bone.image = slices{i}{j};        % Slice selected
     
     % CREATE FILE
+    withoutPores = true;
     dirname = '/calculSSD/salome/Simulation-10mai';
+
     simulation_name = ['Bone', bone.id, '-Image', sprintf('%04d', bone.image), '/'];
+    
+    if withoutPores
+        simulation_name = ['Bone', bone.id, '-Image0000/'];
+    end
     simu_dir = fullfile(dirname, simulation_name); 
     
     if ~exist(simu_dir,'dir')
@@ -37,7 +43,7 @@ for j = 1:numel(slices{i})
     % If the path to the simulation file is saved as an argument, a
     % the signal and geometry files will be registred in the directory.
     MakeSgl(param, grid, medium, signal, false, simu_dir);
-    [Map, grid] = MakeGeometryExVivoAll(grid, probe, bone, rotate, printPlot, simu_dir);
+    [Map, grid] = MakeGeometryExVivoAll(grid, probe, bone, rotate, withoutPores, printPlot, simu_dir);
 
     % CREATION OF THE PARAMETERS FILE IN EACH TRANSMITTER DIRECTORY
     fprintf('---------- Parameters genration ----------\n');

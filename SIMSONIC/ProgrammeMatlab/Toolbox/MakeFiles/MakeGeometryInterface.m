@@ -37,16 +37,16 @@ function[Map, heights] = MakeGeometryInterface(grid, probe, medium, interface, v
         % Bone index :1
         % Soft tissu index : 0
         Map=zeros(Nz, Nx, 'uint8');
-
+        
         heights = GenerateRoughSurface(Nx, grid.width, interface.rms, interface.corr);
         heights(isnan(heights)) = 0;
-    
+        
+        periInd = 1;
+        if interface.periost ~= 0
+            periInd = to_px(interface.periost);
+        end 
         for i = 1:Nx
-            endostInd = 1;
-            if interface.periost ~= 0
-                endostInd = to_px(interface.periost);
-            end 
-            Map(endostInd: to_px(heights(i) + interface.endost), i) = 1;
+            Map(periInd: to_px(heights(i) + interface.endost), i) = 1;
         end 
         
         % Verify that the plot verify the rms and correlation length asked
@@ -54,7 +54,7 @@ function[Map, heights] = MakeGeometryInterface(grid, probe, medium, interface, v
         iteration = iteration +1;
         if (0.9*interface.rms < Rq) && (Rq < 1.1*interface.rms) ...
                 && (0.9*interface.corr < Corr) && (Corr < 1.1*interface.corr) ...
-                || iteration >100
+                || iteration >100 || interface.rugosity == 0
             regenerate = false;
             if iteration > 100
                 frpintf('Not able to create map with input parameters')

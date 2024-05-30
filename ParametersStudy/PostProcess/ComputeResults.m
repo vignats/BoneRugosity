@@ -6,9 +6,10 @@ addpath(genpath('/calculSSD/salome'));
 
 %% PROCESSING OF THE RF DATA 
 % Generate a table to stock the geometry and the specularity Map
-pathSimuAll = '/calculSSD/salome/Simulation-29avr';
+pathSimuAll = '/calculSSD/salome/Simulation-19avr';
 rmsAll = 0.03 + (0:9) * 0.05;      % List of rms values (mm)
-corrAll = [0.5 1 2 4];             % List of correlation length (mm)
+rmsAll(end +1) = 0;
+corrAll = [0.5 1 2 4 0];           % List of correlation length (mm)
 
 Results = struct();
 
@@ -19,6 +20,7 @@ Results.SpecuMap = ComputeMap('SpecuMap', rmsAll, corrAll, pathSimuAll, Results)
 %% Plot maps
 MapTitle = 'Interface profile for various RMS and correlation length';
 PlotAll('Map', Results, rmsAll, corrAll, pathSimuAll, MapTitle);
+
 %%
 MapTitle = 'Specular probability for various RMS and correlation length';
 PlotAll('SpecuMap', Results, rmsAll, corrAll, pathSimuAll, MapTitle);

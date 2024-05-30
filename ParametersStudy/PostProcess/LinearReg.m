@@ -60,12 +60,12 @@ coeffTwoLayer = corrcoef([outputAll(41:80) inputAll(41:80, :)]);
 coeffTwoLayer10pores = corrcoef([outputAll(81:120) inputAll(81:120, :)]);
 %% Plot mean ROI
 figure;
-surf(corrAll, rmsAll, table2array(ResultsAll{1}.Stat.meanROI), 'FaceColor', 'red', 'FaceAlpha', 0.5);
-hold on
-surf(corrAll, rmsAll, table2array(ResultsAll{2}.Stat.meanROI), 'FaceColor', 'blue', 'FaceAlpha', 0.5);
-hold on
-surf(corrAll, rmsAll, table2array(ResultsAll{3}.Stat.meanROI), 'FaceColor', 'green', 'FaceAlpha', 0.5);
-hold on 
+% surf(corrAll, rmsAll, table2array(ResultsAll{1}.Stat.meanROI), 'FaceColor', 'red', 'FaceAlpha', 0.5);
+% hold on
+% surf(corrAll, rmsAll, table2array(ResultsAll{2}.Stat.meanROI), 'FaceColor', 'blue', 'FaceAlpha', 0.5);
+% hold on
+% surf(corrAll, rmsAll, table2array(ResultsAll{3}.Stat.meanROI), 'FaceColor', 'green', 'FaceAlpha', 0.5);
+% hold on 
 scatter3(inputCell{1}(:,1), inputCell{1}(:,2),outputCell{1}, 'r*');
 hold on;
 scatter3(inputCell{2}(:,1), inputCell{2}(:,2), outputCell{2}, 'b*');
@@ -78,40 +78,46 @@ zlabel('Mean Specular Probability');
 title('Mean Specular Probability in the Region of Interest');
 legend('No pores', '10um pores', '30um pores');
 %% Plot with real inputs
+% Augmenter la résolution de la grille
+numPoints = 40; % Par exemple, 50 points dans chaque direction
 
-[X1, Y1] = meshgrid(linspace(min(inputCell{1}(:,1)), max(inputCell{1}(:,1)), 10),...
-    linspace(min(inputCell{1}(:,2)), max(inputCell{1}(:,2)), 10));
-Z1 = griddata(inputCell{1}(:,1), inputCell{1}(:,2), outputCell{1},X1,Y1,'v4');
+[X1, Y1] = meshgrid(linspace(min(inputCell{1}(:,1)), max(inputCell{1}(:,1)), numPoints),...
+    linspace(min(inputCell{1}(:,2)), max(inputCell{1}(:,2)), numPoints));
+Z1 = griddata(inputCell{1}(:,1), inputCell{1}(:,2), outputCell{1}, X1, Y1, 'natural');
 
-[X2, Y2] = meshgrid(linspace(min(inputCell{2}(:,1)), max(inputCell{2}(:,1)), 10),...
-    linspace(min(inputCell{2}(:,2)), max(inputCell{2}(:,2)), 10));
-Z2 = griddata(inputCell{2}(:,1), inputCell{2}(:,2), outputCell{2},X2,Y2,'v4');
+[X2, Y2] = meshgrid(linspace(min(inputCell{2}(:,1)), max(inputCell{2}(:,1)), numPoints),...
+    linspace(min(inputCell{2}(:,2)), max(inputCell{2}(:,2)), numPoints));
+Z2 = griddata(inputCell{2}(:,1), inputCell{2}(:,2), outputCell{2}, X2, Y2, 'natural');
 
-[X3, Y3] = meshgrid(linspace(min(inputCell{3}(:,1)), max(inputCell{3}(:,1)), 10),...
-    linspace(min(inputCell{3}(:,2)), max(inputCell{3}(:,2)), 10));
-Z3 = griddata(inputCell{3}(:,1), inputCell{3}(:,2), outputCell{3},X3,Y3,'v4');
+[X3, Y3] = meshgrid(linspace(min(inputCell{3}(:,1)), max(inputCell{3}(:,1)), numPoints),...
+    linspace(min(inputCell{3}(:,2)), max(inputCell{3}(:,2)), numPoints));
+Z3 = griddata(inputCell{3}(:,1), inputCell{3}(:,2), outputCell{3}, X3, Y3, 'natural');
 
 figure;
-surf(X1, Y1, Z1, 'FaceColor', 'red', 'FaceAlpha', 0.5);
+surf(X1, Y1, Z1, 'FaceColor', 'red', 'FaceAlpha', 0.5, 'EdgeColor', 'none');
 hold on;
-surf(X2, Y2, Z2, 'FaceColor', 'blue', 'FaceAlpha', 0.5);
+surf(X2, Y2, Z2, 'FaceColor', 'blue', 'FaceAlpha', 0.5, 'EdgeColor', 'none');
 hold on;
-surf(X3, Y3, Z3, 'FaceColor', 'green', 'FaceAlpha', 0.5);
+surf(X3, Y3, Z3, 'FaceColor', 'green', 'FaceAlpha', 0.5, 'EdgeColor', 'none');
+hold on;
+scatter3(inputCell{1}(:,1), inputCell{1}(:,2), outputCell{1}, 'r*');
+hold on;
+scatter3(inputCell{2}(:,1), inputCell{2}(:,2), outputCell{2}, 'b*');
+hold on;
+scatter3(inputCell{3}(:,1), inputCell{3}(:,2), outputCell{3}, 'g*');
 
 %% Plot the scatter map
 % Extract numeric data from cell arrays
 x = inputCell{1}(:,1); % First column of inputs
 y = inputCell{1}(:,2); % Second column of inputs (if exists)
-z = outputCell{1}; % Output values
+probaRoi = outputCell{1}; % Output values
 
 % Fit the data using a polynomial surface fit
-sf = fit([x, y], z, "linearinterp",ExtrapolationMethod="linear");
+sf = fit([x, y], probaRoi, "linearinterp",ExtrapolationMethod="linear");
 
 % Create a 3D scatter plot with the fitted surface
 figure;
-scatter3(x, y, z, 'red', 'filled'); % Scatter plot of original data
-hold on;
-surf(x, y, z); % Plot the fitted surface
+plot(sf, [x, y], probaRoi); % Scatter plot of original data
 xlabel('X');
 ylabel('Y');
 zlabel('Z');
@@ -130,18 +136,49 @@ zlabel('Mean Specular Probability');
 title('Mean Specular Probability in the Region of Interest');
 legend('No pores', '10um pores', '30um pores');
 
-%% Plot the mean value for correlation
+%% Plot in 2D
 figure;
-plot(table2array(mean(ResultsAll{1}.InitParam.Rms, 2)), table2array(mean(ResultsAll{1}.Stat.meanROI, 2)), 'r-*');
-hold on;
-plot(table2array(mean(ResultsAll{1}.InitParam.Rms, 2)), table2array(mean(ResultsAll{2}.Stat.meanROI, 2)), 'b-*');
-hold on;
-plot(table2array(mean(ResultsAll{1}.InitParam.Rms, 2)), table2array(mean(ResultsAll{3}.Stat.meanROI, 2)), 'g-*');
-xlabel('Correlation length (mm)');
-ylabel('Root mean square (mm)');
-zlabel('Mean Specular Probability');
+col = {{'#E57373', '#F44336', '#D32F2F', '#B71C1C'}, {'#7986CB  ', '#3F51B5', '#303F9F', '#1A237E'},...
+    {'#AED581', '#8BC34A', '#689F38', '#33691E'}};
+obj = {'*', 'o', 'd', 'x'};
+simulParam = {'0', '10', '30'};
+
+handlesColor = [];
+labelsColor = {};
+handlesShape = [];
+labelsShape = {};
+
+for i = 1:length(ResultsAll)
+    for j = 1:length(obj)
+        s = scatter(table2array(ResultsAll{i}.InitParam.Rms(:,j)), table2array(ResultsAll{i}.Stat.meanROI(:,j)),...
+            obj{j}, 'MarkerEdgeColor', col{i}{j});
+
+        [curve, ~] = fit(table2array(ResultsAll{i}.InitParam.Rms(:,j)), table2array(ResultsAll{i}.Stat.meanROI(:,j)),'poly1');
+        p = plot(curve);
+        p.Color = col{i}{j};
+        % p.LineWidth = 2;
+        
+        if i == 1
+            handlesShape(end+1) = s;
+            labelsShape{end+1} = sprintf('%s = %.1f mm', texlabel('rho'), corrAll(j));
+        end
+        
+        if j ==1
+            handlesColor(end+1) = p;
+            labelsColor{end+1} = sprintf('Por.Size = %s %sm', simulParam{i}, texlabel('mu'));
+        end
+        hold on;
+    end
+end
+hold off
+handles = [handlesColor, handlesShape];
+labels = [labelsColor, labelsShape];
+
+xlabel('Root mean square (mm)');
+ylabel('Mean Specular Probability');
 title('Mean Specular Probability in the Region of Interest');
-legend('No pores', '10um pores', '30um pores');
+% legend(handlesColor, labelsColor, 'Location', 'northeastoutside');
+% legend(handlesShape, labelsShape, 'Location', 'northeastoutside');
 %% Plot the mean value for rms
 figure;
 plot(table2array(mean(ResultsAll{1}.InitParam.Corr, 2)), table2array(mean(ResultsAll{1}.Stat.meanROI, 2)), 'r*');
@@ -149,8 +186,48 @@ hold on;
 plot(table2array(mean(ResultsAll{1}.InitParam.Corr, 2)), table2array(mean(ResultsAll{2}.Stat.meanROI, 2)), 'b*');
 hold on;
 plot(table2array(mean(ResultsAll{1}.InitParam.Corr, 2)), table2array(mean(ResultsAll{3}.Stat.meanROI, 2)), 'g*');
+xlabel('Root mean square (mm)');
+ylabel('Mean Specular Probability');
+title('Mean Specular Probability in the Region of Interest');
+legend('No pores', '10um pores', '30um pores');
+
+%%
+figure;
+hold on;
+
+% Couleurs pour chaque groupe
+colors = {'red', 'blue', 'green'};
+labels = {'No pores', '10um pores', '30um pores'};
+
+% Boucle sur chaque groupe de points
+for i = 1:length(inputCell)
+    corrValues = inputCell{i}(:,1);
+    rmsValues = inputCell{i}(:,2);
+    probaRoi = outputCell{i};
+
+    % Tracer le nuage de points avec des croix
+    scatter3(corrValues, rmsValues, probaRoi, 'x', 'MarkerEdgeColor', colors{i});
+
+    % Ajuster le plan pour le groupe
+    X = [ones(size([corrValues, rmsValues], 1), 1), [corrValues, rmsValues]];
+    b = X \ probaRoi;
+
+    % Tracer le plan pour le groupe
+    [xGrid, yGrid] = meshgrid(linspace(min(corrValues), max(corrValues), 10), linspace(min(rmsValues), max(rmsValues), 10));
+    zGrid = b(1) + b(2) * xGrid + b(3) * yGrid;
+    surf(xGrid, yGrid, zGrid, 'FaceAlpha', 0.5, 'EdgeColor', 'none', 'FaceColor', colors{i});
+end
+
+% Labels and title
 xlabel('Correlation length (mm)');
 ylabel('Root mean square (mm)');
 zlabel('Mean Specular Probability');
 title('Mean Specular Probability in the Region of Interest');
-legend('No pores', '10um pores', '30um pores');
+
+% Créer une légende en utilisant les handles des scatter et surf
+legend('E.Pore = 0', 'Fitted surface, E.Pore = 0', 'E.Pore = 10mm', 'Fitted surface, E.Pore = 10mm',...
+    'E.Pore = 30mm', 'Fitted surface, E.Pore = 30mm');
+
+hold off;
+
+

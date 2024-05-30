@@ -35,6 +35,11 @@ function [param, grid, probe, medium, interface, signal, simu_dir, corrAll, rmsA
     medium.attenuation(1) = 0;       % Attenuation coefficient (dB/cm/MHz, default: 0)
     medium.attenuation(2) = 0;     
     
+    % SIGNAL PARAMETERS 
+    signal.fc = probe.fc;            % Central frequency (Hz)
+    signal.B = 1.33e6;               % Bandwith at 3dB (Hz)
+    signal.nb_periode = 3;           % Number of periode for the emitted signal
+
     % INTERFACE PARAMETERS
     corrAll = [0.5 1 2 4];
     rmsAll = 0.03 + (0:9) * 0.05;
@@ -47,12 +52,7 @@ function [param, grid, probe, medium, interface, signal, simu_dir, corrAll, rmsA
             interface.rms = rmsAll(j);            % Rms height (mm)
             interface.diameter = 0.03;            % Size of the pore in the bone (mm)
             interface.rugosity = 7;               % Rugosity in a layer of a wavelength size at the bone interface, 0 if no pore (%)
-                
-            % SIGNAL PARAMETERS 
-            signal.fc = probe.fc;            % Central frequency (Hz)
-            signal.B = 1.33e6;               % Bandwith at 3dB (Hz)
-            signal.nb_periode = 3;           % Number of periode for the emitted signal
-        
+                    
             % FILTRATION PARAMETERS
             % To create interface based on the waviness and/or roughness of the
             % endost of a ex-vivo bone endost imaged by X-Ray, contained in the RMS
